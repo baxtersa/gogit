@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/baxtersa/gogit"
+	"github.com/baxtersa/gogit/github"
 )
 
 func main() {
-	Connect()
+	gogit.Connect()
 }
