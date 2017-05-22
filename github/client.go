@@ -6,23 +6,18 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/baxtersa/gogit/internal"
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
 )
 
-func check(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
 func getAccessToken() string {
 	f, err := os.Open(".access-token")
-	check(err)
+	gogit.Check(err)
 
 	b := make([]byte, 40)
 	n, err := f.Read(b)
-	check(err)
+	gogit.Check(err)
 	if n != 40 {
 		panic("Invalid GitHub Access Token")
 	}
@@ -40,9 +35,9 @@ func Connect() {
 	client := github.NewClient(tc)
 
 	user, _, err := client.Users.Get(ctx, "")
-	check(err)
+	gogit.Check(err)
 
 	d, err := json.MarshalIndent(user, "", "  ")
-	check(err)
+	gogit.Check(err)
 	fmt.Println(string(d))
 }

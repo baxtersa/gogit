@@ -1,9 +1,11 @@
 package main
 
 import (
-	"github.com/baxtersa/gogit/github"
+	client "github.com/baxtersa/gogit/github"
+	tui "github.com/baxtersa/gogit/ncurses"
 )
 
 func main() {
-	gogit.Connect()
+	client.Connect()
+	tui.Interface()
 }
