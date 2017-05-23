@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	var client = gh.Connect()
+	client := gh.Connect()
 	fmt.Println(*gh.User(client).Name)
 	for _, repo := range gh.Repositories(client) {
 		fmt.Println(*repo.FullName)

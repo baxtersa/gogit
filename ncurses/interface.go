@@ -1,32 +1,62 @@
 package gogit
 
 import (
-	"github.com/rthornton128/goncurses"
-	"log"
+	"time"
+
+	common "github.com/baxtersa/gogit/internal"
+	gc "github.com/rthornton128/goncurses"
 )
 
-func Interface() {
-	// Initialize goncurses. It's essential End() is called to ensure the
-	// terminal isn't altered after the program ends
-	stdscr, err := goncurses.Init()
-	if err != nil {
-		log.Fatal("init", err)
+const FPS_60HZ = time.Second / 60
+
+type View interface {
+	Draw(*gc.Window)
+	Update()
+}
+
+var views = make([]View, 0, 16)
+
+func updateViews(my int, mx int) {
+}
+
+func drawViews(s *gc.Window) {
+	for _, vw := range views {
+		vw.Draw(s)
 	}
-	defer goncurses.End()
+}
 
-	// (Go)ncurses draws by cursor position and uses reverse cartisian
-	// coordinate system (y,x). Initially, the cursor is positioned at the
-	// coordinates 0,0 so the first call to Print will output the text at the
-	// top, left position of the screen since stdscr is a window which
-	// represents the terminal's screen size.
-	stdscr.Print("Hello, World!")
-	stdscr.MovePrint(3, 0, "Press any key to continue")
+func handleInput(s *gc.Window) bool {
+	k := s.GetChar()
 
-	// Refresh() flushes output to the screen. Internally, it is the same as
-	// calling NoutRefresh() on the window followed by a call to Update()
-	stdscr.Refresh()
+	switch byte(k) {
+	default:
+		return false
+	}
+	return true
+}
 
-	// GetChar will block execution until an input event, like typing a
-	// character on your keyboard, is received
-	stdscr.GetChar()
+func Interface() {
+	stdscr, err := gc.Init()
+	common.Check(err)
+	defer gc.End()
+
+	gc.Echo(false)
+	gc.Cursor(0)
+	stdscr.Clear()
+	stdscr.Keypad(true)
+
+	frameRate := time.NewTicker(FPS_60HZ)
+
+loop:
+	for {
+		select {
+		case <-frameRate.C:
+			updateViews(stdscr.MaxYX())
+			drawViews(stdscr)
+		default:
+			if !handleInput(stdscr) {
+				break loop
+			}
+		}
+	}
 }
