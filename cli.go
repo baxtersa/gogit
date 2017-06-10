@@ -26,7 +26,7 @@ func main() {
 loop:
 	for {
 		select {
-		case <-tui.In:
+		case <-tui.Quit:
 			break loop
 		}
 	}

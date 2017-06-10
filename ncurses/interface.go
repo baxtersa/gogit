@@ -1,13 +1,14 @@
 package gogit
 
 import (
+	"fmt"
 	"time"
 
 	common "github.com/baxtersa/gogit/internal"
 	gc "github.com/rthornton128/goncurses"
 )
 
-var In = make(chan byte)
+var Quit = make(chan byte)
 
 const FPS_60HZ = time.Second / 60
 
@@ -31,9 +32,12 @@ func handleInput(s *gc.Window) bool {
 	k := s.GetChar()
 
 	switch byte(k) {
-	default:
-		In <- byte(k)
+	case 'q':
+		Quit <- byte(k)
 		return false
+	default:
+		fmt.Println(byte(k))
+		return true
 	}
 	return true
 }
