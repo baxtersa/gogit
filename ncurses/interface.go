@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	gh "github.com/baxtersa/gogit/github"
 	common "github.com/baxtersa/gogit/internal"
 	gc "github.com/rthornton128/goncurses"
 )
@@ -28,21 +29,33 @@ func drawViews(s *gc.Window) {
 	}
 }
 
-func handleInput(s *gc.Window) bool {
-	k := s.GetChar()
-
-	switch byte(k) {
+func handleInput(c gc.Char, reqs *gh.ReqChannels) bool {
+	fmt.Printf(string(c))
+	switch rune(c) {
 	case 'q':
-		Quit <- byte(k)
+		Quit <- byte(c)
 		return false
-	default:
-		fmt.Println(byte(k))
-		return true
+	case 'r':
+		reqs.Repo <- true
+	case 'u':
+		reqs.User <- true
+	case 'i':
+		reqs.Issue <- true
 	}
 	return true
 }
 
-func Interface() {
+func readIn(w *gc.Window, ch chan<- gc.Char, ready <-chan bool) {
+	for {
+		// Block until all write operations are complete
+		<-ready
+		// Send typed character down the channel (which is blocking
+		// in the main loop)
+		ch <- gc.Char(w.GetChar())
+	}
+}
+
+func Interface(reqs *gh.ReqChannels, resps *gh.RespChannels) {
 	stdscr, err := gc.Init()
 	common.Check(err)
 
@@ -51,13 +64,30 @@ func Interface() {
 	stdscr.Clear()
 	stdscr.Keypad(true)
 
+	in := make(chan gc.Char)
+	ready := make(chan bool)
+	go readIn(stdscr, in, ready)
+
 loop:
 	for {
 		select {
-		default:
-			if !handleInput(stdscr) {
+		case s := <-resps.Repo:
+			for _, str := range s {
+				fmt.Println(str)
+			}
+		case s := <-resps.User:
+			for _, str := range s {
+				fmt.Println(str)
+			}
+		case s := <-resps.Issue:
+			for _, str := range s {
+				fmt.Println(str)
+			}
+		case c := <-in:
+			if !handleInput(c, reqs) {
 				break loop
 			}
+		case ready <- true:
 		}
 	}
 }

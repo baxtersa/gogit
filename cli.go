@@ -1,33 +1,29 @@
 package main
 
 import (
-	"fmt"
-
 	gh "github.com/baxtersa/gogit/github"
 	tui "github.com/baxtersa/gogit/ncurses"
-	"github.com/google/go-github/github"
 )
-
-type Channels struct {
-	repo  chan *github.Repository
-	user  chan *github.User
-	issue chan *github.Issue
-}
 
 func main() {
 	client := gh.Connect()
-	fmt.Println(*gh.User(client).Name)
-	for _, repo := range gh.Repositories(client) {
-		fmt.Println(*repo.FullName)
+
+	reqs := gh.ReqChannels{
+		Repo:   make(chan bool),
+		User:   make(chan bool),
+		Issue:  make(chan bool),
+		Client: client,
 	}
-	go tui.Interface()
+	resps := gh.RespChannels{
+		Repo:  make(chan []string),
+		User:  make(chan []string),
+		Issue: make(chan []string),
+	}
+
+	go gh.HandleRequests(&reqs, &resps)
+	go tui.Interface(&reqs, &resps)
+
 	defer tui.End()
 
-loop:
-	for {
-		select {
-		case <-tui.Quit:
-			break loop
-		}
-	}
+	<-tui.Quit
 }
