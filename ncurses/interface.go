@@ -1,7 +1,6 @@
 package gogit
 
 import (
-	"fmt"
 	"time"
 
 	gh "github.com/baxtersa/gogit/github"
@@ -30,7 +29,6 @@ func drawViews(s *gc.Window) {
 }
 
 func handleInput(c gc.Char, reqs *gh.ReqChannels) bool {
-	fmt.Printf(string(c))
 	switch rune(c) {
 	case 'q':
 		Quit <- byte(c)
@@ -73,16 +71,19 @@ loop:
 		select {
 		case s := <-resps.Repo:
 			for _, str := range s {
-				fmt.Println(str)
+				stdscr.Println(str)
 			}
+			stdscr.Refresh()
 		case s := <-resps.User:
 			for _, str := range s {
-				fmt.Println(str)
+				stdscr.Println(str)
 			}
+			stdscr.Refresh()
 		case s := <-resps.Issue:
 			for _, str := range s {
-				fmt.Println(str)
+				stdscr.Println(str)
 			}
+			stdscr.Refresh()
 		case c := <-in:
 			if !handleInput(c, reqs) {
 				break loop
