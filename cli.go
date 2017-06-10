@@ -5,7 +5,14 @@ import (
 
 	gh "github.com/baxtersa/gogit/github"
 	tui "github.com/baxtersa/gogit/ncurses"
+	"github.com/google/go-github/github"
 )
+
+type Channels struct {
+	repo  chan *github.Repository
+	user  chan *github.User
+	issue chan *github.Issue
+}
 
 func main() {
 	client := gh.Connect()
@@ -13,5 +20,14 @@ func main() {
 	for _, repo := range gh.Repositories(client) {
 		fmt.Println(*repo.FullName)
 	}
-	tui.Interface()
+	go tui.Interface()
+	defer tui.End()
+
+loop:
+	for {
+		select {
+		case <-tui.In:
+			break loop
+		}
+	}
 }

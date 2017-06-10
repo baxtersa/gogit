@@ -7,6 +7,8 @@ import (
 	gc "github.com/rthornton128/goncurses"
 )
 
+var In = make(chan byte)
+
 const FPS_60HZ = time.Second / 60
 
 type View interface {
@@ -30,6 +32,7 @@ func handleInput(s *gc.Window) bool {
 
 	switch byte(k) {
 	default:
+		In <- byte(k)
 		return false
 	}
 	return true
@@ -38,25 +41,23 @@ func handleInput(s *gc.Window) bool {
 func Interface() {
 	stdscr, err := gc.Init()
 	common.Check(err)
-	defer gc.End()
 
 	gc.Echo(false)
 	gc.Cursor(0)
 	stdscr.Clear()
 	stdscr.Keypad(true)
 
-	frameRate := time.NewTicker(FPS_60HZ)
-
 loop:
 	for {
 		select {
-		case <-frameRate.C:
-			updateViews(stdscr.MaxYX())
-			drawViews(stdscr)
 		default:
 			if !handleInput(stdscr) {
 				break loop
 			}
 		}
 	}
+}
+
+func End() {
+	gc.End()
 }
