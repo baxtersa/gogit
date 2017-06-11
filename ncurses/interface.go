@@ -1,32 +1,13 @@
 package gogit
 
 import (
-	"time"
-
 	gh "github.com/baxtersa/gogit/github"
 	common "github.com/baxtersa/gogit/internal"
 	gc "github.com/rthornton128/goncurses"
 )
 
 var Quit = make(chan byte)
-
-const FPS_60HZ = time.Second / 60
-
-type View interface {
-	Draw(*gc.Window)
-	Update()
-}
-
-var views = make([]View, 0, 16)
-
-func updateViews(my int, mx int) {
-}
-
-func drawViews(s *gc.Window) {
-	for _, vw := range views {
-		vw.Draw(s)
-	}
-}
+var windows = []View{}
 
 func handleInput(c gc.Char, reqs *gh.ReqChannels) bool {
 	switch rune(c) {
@@ -54,6 +35,7 @@ func readIn(w *gc.Window, ch chan<- gc.Char, ready <-chan bool) {
 }
 
 func Interface(reqs *gh.ReqChannels, resps *gh.RespChannels) {
+	// Initialize ncurses terminal
 	stdscr, err := gc.Init()
 	common.Check(err)
 
@@ -62,32 +44,57 @@ func Interface(reqs *gh.ReqChannels, resps *gh.RespChannels) {
 	stdscr.Clear()
 	stdscr.Keypad(true)
 
+	// Create ncurses window
+	rows, cols := stdscr.MaxYX()
+	height, width := 5, 10
+	y, x := (rows-height)/2, (cols-width)/2
+
+	win, err := gc.NewWindow(height, width, y, x)
+	common.Check(err)
+	menu := Menu{w: win}
+	menuIdx := AddView(&menu)
+	menu.Draw()
+	menu.Update()
+	defer DeleteView(menuIdx)
+
+	// Initialize stdin handling
 	in := make(chan gc.Char)
 	ready := make(chan bool)
-	go readIn(stdscr, in, ready)
+	go readIn(win, in, ready)
 
 loop:
 	for {
 		select {
 		case s := <-resps.Repo:
+			stdscr.Move(0, 0)
 			for _, str := range s {
 				stdscr.Println(str)
 			}
+			UpdateViews()
 			stdscr.Refresh()
 		case s := <-resps.User:
+			stdscr.Move(0, 0)
 			for _, str := range s {
 				stdscr.Println(str)
 			}
+			UpdateViews()
 			stdscr.Refresh()
 		case s := <-resps.Issue:
+			stdscr.Move(0, 0)
 			for _, str := range s {
 				stdscr.Println(str)
 			}
+			UpdateViews()
 			stdscr.Refresh()
 		case c := <-in:
 			if !handleInput(c, reqs) {
 				break loop
 			}
+			stdscr.MovePrintf(rows-2, 0, "Character pressed: %c", rune(c))
+			stdscr.ClearToEOL()
+			DrawViews()
+			UpdateViews()
+			stdscr.Refresh()
 		case ready <- true:
 		}
 	}
