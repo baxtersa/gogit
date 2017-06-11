@@ -82,30 +82,6 @@ func getAccessToken() string {
 	return string(b)
 }
 
-func Issues(client *github.Client) []*github.Issue {
-	ctx := context.Background()
-	issues, _, err := client.Issues.List(ctx, true, nil)
-	common.Check(err)
-
-	return issues
-}
-
-func Repositories(client *github.Client) []*github.Repository {
-	ctx := context.Background()
-	repos, _, err := client.Repositories.List(ctx, "", nil)
-	common.Check(err)
-
-	return repos
-}
-
-func User(client *github.Client) *github.User {
-	ctx := context.Background()
-	user, _, err := client.Users.Get(ctx, "")
-	common.Check(err)
-
-	return user
-}
-
 func HandleRequests(reqs *ReqChannels, resps *RespChannels) {
 	for {
 		select {
