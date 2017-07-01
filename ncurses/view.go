@@ -1,13 +1,15 @@
 package gogit
 
 import (
+	gh "github.com/baxtersa/gogit/github"
 	gc "github.com/rthornton128/goncurses"
 )
 
 type View interface {
 	Draw()
-	Update()
 	Free()
+	HandleInput(c gc.Char, req *gh.ReqChannels) bool
+	Update()
 }
 
 var views = make([]View, 0, 16)
