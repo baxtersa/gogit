@@ -9,6 +9,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
+// Generic type to emit a request to a GH client
 type Request interface {
 	make() []string
 }
@@ -23,6 +24,7 @@ type ReqIssue struct {
 	client *github.Client
 }
 
+// Make a request for repositories
 func (req ReqRepo) make() []string {
 	ctx := context.Background()
 	repos, _, err := req.client.Repositories.List(ctx, "", nil)
@@ -35,6 +37,7 @@ func (req ReqRepo) make() []string {
 	return strs
 }
 
+// Make a request for the authenticated user
 func (req ReqUser) make() []string {
 	ctx := context.Background()
 	user, _, err := req.client.Users.Get(ctx, "")
@@ -43,6 +46,7 @@ func (req ReqUser) make() []string {
 	return []string{*user.Name}
 }
 
+// Make a request for issues
 func (req ReqIssue) make() []string {
 	ctx := context.Background()
 	issues, _, err := req.client.Issues.ListByRepo(ctx, "plasma-umass", "Stopify", nil)
@@ -55,6 +59,7 @@ func (req ReqIssue) make() []string {
 	return strs
 }
 
+// Collection of channels to asynchronously prompt for GH client requests
 type ReqChannels struct {
 	Repo   chan bool
 	User   chan bool
@@ -62,6 +67,8 @@ type ReqChannels struct {
 	Client *github.Client
 }
 
+// Collection of channels to asynchronously receive responses from
+// GH client requests
 type RespChannels struct {
 	Repo  chan []string
 	User  chan []string
@@ -82,6 +89,10 @@ func getAccessToken() string {
 	return string(b)
 }
 
+// Asynchronously block and wait for prompts to make GH client requests
+// params:
+//   `reqs`: Channels to wait for prompt to make requests
+//   `resps`: Channels to send results of completed requests
 func HandleRequests(reqs *ReqChannels, resps *RespChannels) {
 	for {
 		select {
@@ -98,6 +109,9 @@ func HandleRequests(reqs *ReqChannels, resps *RespChannels) {
 	}
 }
 
+// Authenticate a GH client
+// returns:
+//   An authenticated GH client
 func Connect() *github.Client {
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
