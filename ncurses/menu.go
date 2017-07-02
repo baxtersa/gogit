@@ -1,7 +1,6 @@
 package gogit
 
 import (
-	gh "github.com/baxtersa/gogit/github"
 	gc "github.com/rthornton128/goncurses"
 )
 
