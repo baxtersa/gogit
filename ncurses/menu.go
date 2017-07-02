@@ -49,6 +49,7 @@ func (m *menu) Free() {
 }
 
 func (m *menu) HandleInput(c gc.Char, reqs *gh.ReqChannels) bool {
+	PAGE_NUM := 5
 	switch c {
 	case 'j':
 		fallthrough
@@ -58,6 +59,14 @@ func (m *menu) HandleInput(c gc.Char, reqs *gh.ReqChannels) bool {
 		fallthrough
 	case gc.KEY_UP:
 		m.menu.Driver(gc.REQ_UP)
+	case '':
+		for i := 0; i < PAGE_NUM; i++ {
+			m.menu.Driver(gc.REQ_DOWN)
+		}
+	case '':
+		for i := 0; i < PAGE_NUM; i++ {
+			m.menu.Driver(gc.REQ_UP)
+		}
 	}
 	return true
 }
