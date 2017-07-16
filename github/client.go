@@ -27,11 +27,21 @@ type ReqIssue struct {
 // Make a request for repositories
 func (req ReqRepo) make() []string {
 	ctx := context.Background()
-	repos, _, err := req.client.Repositories.List(ctx, "", nil)
-	common.Check(err)
+	var allRepos []*github.Repository
+	opt := &github.RepositoryListOptions{}
+	for {
+		repos, resp, err := req.client.Repositories.List(ctx, "", opt)
+		common.Check(err)
+
+		allRepos = append(allRepos, repos...)
+		if resp.NextPage == 0 {
+			break
+		}
+		opt.Page = resp.NextPage
+	}
 
 	strs := []string{}
-	for _, repo := range repos {
+	for _, repo := range allRepos {
 		strs = append(strs, *repo.FullName)
 	}
 	return strs
