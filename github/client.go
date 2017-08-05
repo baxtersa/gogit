@@ -59,11 +59,21 @@ func (req ReqUser) make() []string {
 // Make a request for issues
 func (req ReqIssue) make() []string {
 	ctx := context.Background()
-	issues, _, err := req.client.Issues.ListByRepo(ctx, "plasma-umass", "Stopify", nil)
-	common.Check(err)
+	var allIssues []*github.Issue
+	opt := &github.IssueListByRepoOptions{}
+	for {
+		issues, resp, err := req.client.Issues.ListByRepo(ctx, "baxtersa", "gogit", opt)
+		common.Check(err)
+
+		allIssues = append(allIssues, issues...)
+		if resp.NextPage == 0 {
+			break
+		}
+		opt.Page = resp.NextPage
+	}
 
 	strs := []string{}
-	for _, issue := range issues {
+	for _, issue := range allIssues {
 		strs = append(strs, *issue.Title)
 	}
 	return strs
