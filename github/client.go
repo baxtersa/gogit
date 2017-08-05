@@ -62,7 +62,7 @@ func (req ReqIssue) make() []string {
 	var allIssues []*github.Issue
 	opt := &github.IssueListByRepoOptions{}
 	for {
-		issues, resp, err := req.client.Issues.ListByRepo(ctx, "baxtersa", "gogit", opt)
+		issues, resp, err := req.client.Issues.ListByRepo(ctx, "plasma-umass", "Stopify", opt)
 		common.Check(err)
 
 		allIssues = append(allIssues, issues...)

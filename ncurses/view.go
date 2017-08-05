@@ -11,6 +11,7 @@ type View interface {
 	Free()
 	HandleInput(c gc.Char) bool
 	Update()
+	Clear()
 }
 
 // Global views

@@ -52,6 +52,7 @@ func Menu(w *gc.Window, items []string) menu {
 
 // Drawing is managed by ncurses menu driver
 func (m *menu) Draw() {
+	m.w.Box(0, 0)
 }
 
 // Free allocated resources of ncurses menu and items
@@ -97,6 +98,11 @@ func (m *menu) Update() {
 	m.w.Refresh()
 }
 
+// Clear the contents of the view's window
+func (m *menu) Clear() {
+	m.w.Erase()
+}
+
 // Update the contents of the menu
 // params:
 //   `is`: New contents to be displayed
@@ -120,4 +126,5 @@ func (m *menu) SetItems(is []string) {
 	m.menu.Format(height, 1)
 
 	m.menu.Post()
+	m.Draw()
 }

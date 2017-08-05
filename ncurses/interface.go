@@ -111,11 +111,15 @@ func Interface(reqs *gh.ReqChannels, resps *gh.RespChannels) {
 	win, err := gc.NewWindow(height, width, y, x)
 	common.Check(err)
 
-	// Create menu in `win`
+	// Create menus in `win`
 	repos := Menu(win, []string{"foo", "bar"})
+	issues := Menu(win, []string{"baz"})
+
 	// Add `repos` to global views
 	reposIdx := AddView(&repos)
+	issuesIdx := AddView(&issues)
 	defer DeleteView(reposIdx)
+	defer DeleteView(issuesIdx)
 
 	// Initialize stdin handling
 	in := make(chan gc.Char)
@@ -130,6 +134,8 @@ loop:
 		stdscr.Move(0, 0)
 		select {
 		case s := <-resps.Repo:
+			activeW.Clear()
+			activeW = &repos
 			// GH repositories request returned
 			stdscr.Println("repos returned")
 			repos.SetItems(s)
@@ -137,10 +143,11 @@ loop:
 			// GH user request returned
 			stdscr.Println(s[0])
 		case s := <-resps.Issue:
+			activeW.Clear()
+			activeW = &issues
 			// GH issues request returned
-			for _, str := range s {
-				stdscr.Println(str)
-			}
+			stdscr.Println("issues returned")
+			issues.SetItems(s)
 		case c := <-in:
 			// Char read from stdscr
 			if !handleInput(stdscr, c, reqs) {
